@@ -4,8 +4,22 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 
-// deepseek tells me to make it a component. so i make it a component.
-class GlobalKeyLogger : public juce::Component{
+// i changed it to label because label is inhereting from component and allows for text creation
+class oscSend {
+public:
+    void sendOSCMessage(const juce::String& address, int val){
+        juce::OSCMessage msg(address);
+        msg.addInt32(val);
+        
+        if(!sender.send(msg)){
+            DBG("error message not sent.");
+        }
+    }
+    juce::OSCSender sender;
+private:
+};
+
+class GlobalKeyLogger : public juce::Label{
 public:
     GlobalKeyLogger() {
         // Create an event tap to listen for key events
@@ -15,19 +29,20 @@ public:
             kCGEventTapOptionDefault,
             CGEventMaskBit(kCGEventKeyDown),
             eventTapCallback,
-            this // Pass 'this' as the user data
+            this // using 'this' as refcon allows for component modification during static hardware interaction.
         );
 
         if (!eventTap) {
+            setText("_keypress is unable to record. please ensure accessibility permissions are enabled.", juce::NotificationType::dontSendNotification);
             juce::Logger::writeToLog("Failed to create event tap. Ensure accessibility permissions are enabled.");
             return;
         }
 
-        // Add the event tap to the run loop
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0);
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
         CGEventTapEnable(eventTap, true);
-
+        setColour(juce::Label::ColourIds::textColourId, juce::Colours::black);
+        setText("logger started", juce::NotificationType::dontSendNotification);
         juce::Logger::writeToLog("Global key logger started.");
     }
 
@@ -41,23 +56,39 @@ public:
             CFRelease(runLoopSource);
         }
     }
+    
+    oscSend testSender;
+    juce::Colour bg;
 
 private:
+    
+    //
+    //
+    
     CFMachPortRef eventTap = nullptr;
     CFRunLoopSourceRef runLoopSource = nullptr;
 
+    // must look into cgeventref... this is so cool
+    // requires more admin access than the regular programs but can create awesome stuff.
     static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon) {
+        // this does not make sense to me...
+        //
         auto* component = static_cast<GlobalKeyLogger*>(refcon);
+        //
         if (type == kCGEventKeyDown) {
             // Get the key code
             CGKeyCode keyCode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
             juce::Logger::writeToLog("Key pressed: " + juce::String(keyCode));
             std::cout << juce::String(keyCode) << std::endl;
-
-            // You can also map key codes to specific keys using a lookup table
+            juce::String code = juce::String(keyCode);
+            int intCode = keyCode;
+            component->setText("key :" + juce::String(keyCode), juce::NotificationType::dontSendNotification);
+            component->testSender.sendOSCMessage("/test", intCode);
+            component->bg = juce::Colour(std::rand(),std::rand(),std::rand());
         }
         return event;
     }
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GlobalKeyLogger)
 };
@@ -136,14 +167,10 @@ public:
         }
     }
     
+    //
     void timerCallback() override {
         updatePuffle();
     }
-    
-    
-    // test test test
-    //
-    
     
 
 private:

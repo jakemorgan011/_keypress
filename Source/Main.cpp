@@ -9,11 +9,7 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 
-// okay uhhhhh so deepseek says to
-
-
-
-
+// literally don't need to change anything in the main file because this app just sends osc.
 //==============================================================================
 class _keypressApplication  : public juce::JUCEApplication
 {
