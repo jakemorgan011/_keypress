@@ -1,0 +1,7 @@
+#THIS APP WILL KEYLOG 
+this is not malicious keylogging.
+it will send your keylogs to locally to port 7000 using OSC.
+
+when prompted go to your privacy and security settings, then accessibility, and allow _keypress access.
+reopen the app and you should start to see the background color change with keypresses and your connected port should start receiving the values.
+
