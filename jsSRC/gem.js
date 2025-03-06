@@ -76,13 +76,30 @@ var circle = function(id, vertices, speed){
   // would probably be better to have it so that the shared class has its own vertex to reference
   var currentPos = new vertex(vertices[0].v1.x, vertices[0].v1.y);
 
+  var dir = 0;
   var startingPos = currentPos;
   //
   this.getRelativePos = function(){
   }
   this.animateAcross = function(){
+    /*
+    // not working yet but building a branch to figure this out.
+    var scale = 0.03;
+    var dirSwitch = 0;
+    var incrementX = (currentPos.x - vertices[dir].v1.x) * scale;
+    var incrementY = (currentPos.y - vertices[dir].v1.y) * scale;
+    currentPos.x += incrementX;
+    currentPos.y += incrementY;
+    post("xy: ", currentPos.x, incrementX, currentPos.y, incrementY, '\n');
+    // 100% a better way to do this not gonna fix it now.
+    if(currentPos == vertices[dirSwitch]){
+      changeDirection();
+      dirSwitch = dir;
+    }
+    */ 
   }
   this.changeDirection = function(){
+    dir = Math.abs(dir - 1);
   }
   this.update = function(vertex){
     currentPos.x = vertex.v1.x;
@@ -219,8 +236,6 @@ function rotateVertex(shared_vertex){
 }
 
 function update(){
-  // wrote 20 lines of code to simplify 6...
-  // optimal? maybe... 
   rotateVertex(rgVertex);
   rotateVertex(gbVertex);
   rotateVertex(brVertex);
@@ -230,6 +245,9 @@ function update(){
   circleR.update(rgVertex);
   circleG.update(gbVertex);
   circleB.update(brVertex);
+//  circleR.animateAcross();
+//  circleG.animateAcross();
+//  circleB.animateAcross();
   mgraphics.redraw();
 }
 
