@@ -75,14 +75,12 @@ var circle = function(id, vertices, speed){
   // again, which vertex you choose from the shared vertex doesn't matter.
   // would probably be better to have it so that the shared class has its own vertex to reference
   var currentPos = new vertex(vertices[0].v1.x, vertices[0].v1.y);
-
-  var dir = 0;
+  var dir = 1;
   var startingPos = currentPos;
   //
   this.getRelativePos = function(){
   }
   this.animateAcross = function(){
-    /*
     // not working yet but building a branch to figure this out.
     var scale = 0.03;
     var dirSwitch = 0;
@@ -96,7 +94,6 @@ var circle = function(id, vertices, speed){
       changeDirection();
       dirSwitch = dir;
     }
-    */ 
   }
   this.changeDirection = function(){
     dir = Math.abs(dir - 1);
@@ -166,9 +163,9 @@ function calcAspect() {
 }
 
 //
-var lineR = new line(0, new vertex(-0.5,-1), new vertex(0.8,0.5));
+var lineR = new line(0, new vertex(-0.5,-0.73), new vertex(0.8,0.5));
 var lineG = new line(1, new vertex(0.8,0.5), new vertex(0.2,0.8));
-var lineB = new line(2, new vertex(0.2,0.8), new vertex(-0.5,-1));
+var lineB = new line(2, new vertex(0.2,0.8), new vertex(-0.5,-0.73));
 
 let rgVertex = new shared_vertex(lineR.vertex2, lineG.vertex1);
 let gbVertex = new shared_vertex(lineG.vertex2, lineB.vertex1);
@@ -209,6 +206,7 @@ function moveCloser(id){
   vertices[id].updateVertex((vertices[id].v1.x - (vertices[id].v1.x * scale)),(vertices[id].v1.y - (vertices[id].v1.y * scale)));
 }
 
+// is not crossing the zero point because the of the scale factor.
 function moveFarther(id){
   let vertices = [rgVertex, gbVertex, brVertex];
   var scale = 0.05;
@@ -216,15 +214,27 @@ function moveFarther(id){
 }
 
 function moveLeft(id){
+  let vertices = [rgVertex, gbVertex, brVertex];
+  var scale = 0.04;
+  vertices[id].updateVertex((vertices[id].v1.x - (vertices[id].v1.x * scale)), (vertices[id].v1.y));
 }
 
 function moveRight(id){
+  let vertices = [rgVertex, gbVertex, brVertex];
+  var scale = 0.04;
+  vertices[id].updateVertex((vertices[id].v1.x + (vertices[id].v1.x * scale)), (vertices[id].v1.y));
 }
 
 function moveUp(id){
+  let vertices = [rgVertex, gbVertex, brVertex];
+  var scale = 0.04;
+  vertices[id].updateVertex((vertices[id].v1.x), (vertices[id].v1.y + (vertices[id].v1.y * scale)));
 } 
 
 function moveDown(id){
+  let vertices = [rgVertex, gbVertex, brVertex];
+  var scale = 0.04;
+  vertices[id].updateVertex((vertices[id].v1.x), (vertices[id].v1.y - (vertices[id].v1.y * scale)));
 }
 
 function rotateVertex(shared_vertex){
@@ -245,9 +255,9 @@ function update(){
   circleR.update(rgVertex);
   circleG.update(gbVertex);
   circleB.update(brVertex);
-//  circleR.animateAcross();
-//  circleG.animateAcross();
-//  circleB.animateAcross();
+  //circleR.animateAcross();
+  //circleG.animateAcross();
+  //circleB.animateAcross();
   mgraphics.redraw();
 }
 
