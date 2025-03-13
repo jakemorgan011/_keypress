@@ -130,7 +130,7 @@ var circle = function(id, vertices, speed){
     //in theory this should just increment all the way to 1 via the speed.
     //when it hits the vertex.... it should theoretically switch its velocity.
     if(u == 1 || u == 0 && init != 0){
-      speed*-1;
+      speed *= -1;
     }
     init = 1;
     u = clip((u+(speed)),0,1);
