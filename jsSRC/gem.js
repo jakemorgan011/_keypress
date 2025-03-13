@@ -62,6 +62,27 @@ class shared_vertex{
   }
 }
 
+//
+function vectorMult(v1,v2){
+  var vOut = new vertex(v1.x*v2.x,v1.y*v2.y);
+  return vOut;
+}
+
+function vectorDiv(v1,v2){
+  var vOut = new vertex(v1.x/v2.x,v1.y/v2.y);
+  return vOut;
+}
+
+function vectorAdd(v1,v2){
+  var vOut = new vertex(v1.x+v2.x,v1.y+v2.y);
+  return vOut;
+}
+
+function vectorSub(v1,v2){
+  var vOut = new vertex(v1.x-v2.x,v1.y-v2.y);
+  return vOut;
+}
+
 
 //
 var circle = function(id, vertices, speed){
@@ -70,37 +91,41 @@ var circle = function(id, vertices, speed){
   this.speed = speed;
   this.vertices = vertices;
 
+  var velocity = new vertex(speed,speed);
+
   var width = 0.03;
   //
   // again, which vertex you choose from the shared vertex doesn't matter.
   // would probably be better to have it so that the shared class has its own vertex to reference
   var currentPos = new vertex(vertices[0].v1.x, vertices[0].v1.y);
   var dir = 1;
+  var counter = 0;
   var startingPos = currentPos;
   //
   this.getRelativePos = function(){
   }
-  this.animateAcross = function(){
-    // not working yet but building a branch to figure this out.
-    var scale = 0.03;
-    var dirSwitch = 0;
-    var incrementX = (currentPos.x - vertices[dir].v1.x) * scale;
-    var incrementY = (currentPos.y - vertices[dir].v1.y) * scale;
-    currentPos.x += incrementX;
-    currentPos.y += incrementY;
-    post("xy: ", currentPos.x, incrementX, currentPos.y, incrementY, '\n');
-    // 100% a better way to do this not gonna fix it now.
-    if(currentPos == vertices[dirSwitch]){
-      changeDirection();
-      dirSwitch = dir;
-    }
-  }
   this.changeDirection = function(){
     dir = Math.abs(dir - 1);
   }
+  // using p1+(p2-p1)*mag does NOT return a linear movement function
+  // need linear movement;
+  this.animateAcross = function(){
+    // this algo is not linear.
+    // still slow speed towards the tips
+    currentPos = vectorAdd(currentPos,vectorMult(vectorSub(vertices[dir].v1, currentPos),velocity));
+    // hard coded for test
+    // working..
+    // needs to have a more concrete solution to change the direction rather than using a counter that counts the updates.
+    if(counter == 25){
+      dir = Math.abs(dir - 1);
+      counter = 0;
+    }
+    counter++; 
+  }
+  // this needs to bind x/y to the line
   this.update = function(vertex){
-    currentPos.x = vertex.v1.x;
-    currentPos.y = vertex.v1.y;
+    //binds to line now.
+    currentPos = vectorAdd(currentPos,vectorSub(vertex,currentPos));
   } 
   this.paint = function(){
     var aspect = calcAspect();
@@ -207,6 +232,9 @@ function moveCloser(id){
 }
 
 // is not crossing the zero point because the of the scale factor.
+//
+//
+// this sucks and needs to go
 function moveFarther(id){
   let vertices = [rgVertex, gbVertex, brVertex];
   var scale = 0.05;
@@ -244,20 +272,22 @@ function rotateVertex(shared_vertex){
   var y = shared_vertex.v1.y;
   shared_vertex.updateVertex(((x*Math.cos(angle)) - (y*Math.sin(angle))),((y*Math.cos(angle)) + (x*Math.sin(angle))));
 }
+//
+
 
 function update(){
-  rotateVertex(rgVertex);
-  rotateVertex(gbVertex);
-  rotateVertex(brVertex);
+  //rotateVertex(rgVertex);
+  //rotateVertex(gbVertex);
+  //rotateVertex(brVertex);
   outputLineLength(lineR);
   outputLineLength(lineG);
   outputLineLength(lineB);
-  circleR.update(rgVertex);
-  circleG.update(gbVertex);
-  circleB.update(brVertex);
-  //circleR.animateAcross();
-  //circleG.animateAcross();
-  //circleB.animateAcross();
+  //circleR.update(rgVertex);
+  //circleG.update(gbVertex);
+  //circleB.update(brVertex);
+  circleR.animateAcross();
+  circleG.animateAcross();
+  circleB.animateAcross();
   mgraphics.redraw();
 }
 
@@ -283,5 +313,3 @@ function onidle(x,y){
 
 var index = function(){
 }
-
-
