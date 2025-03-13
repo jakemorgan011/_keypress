@@ -123,9 +123,8 @@ var circle = function(id, vertices, speed){
     counter++; 
   }
   // this needs to bind x/y to the line
-  this.update = function(vertex){
-    //binds to line now.
-    currentPos = vectorAdd(currentPos,vectorSub(vertex,currentPos));
+  this.update = function(shared_vertex){
+    currentPos = vectorAdd(currentPos,vectorSub(shared_vertex.v1,currentPos));
   } 
   this.paint = function(){
     var aspect = calcAspect();
@@ -276,15 +275,15 @@ function rotateVertex(shared_vertex){
 
 
 function update(){
-  //rotateVertex(rgVertex);
-  //rotateVertex(gbVertex);
-  //rotateVertex(brVertex);
+  rotateVertex(rgVertex);
+  rotateVertex(gbVertex);
+  rotateVertex(brVertex);
   outputLineLength(lineR);
   outputLineLength(lineG);
   outputLineLength(lineB);
-  //circleR.update(rgVertex);
-  //circleG.update(gbVertex);
-  //circleB.update(brVertex);
+  circleR.update(rgVertex);
+  circleG.update(gbVertex);
+  circleB.update(brVertex);
   circleR.animateAcross();
   circleG.animateAcross();
   circleB.animateAcross();
