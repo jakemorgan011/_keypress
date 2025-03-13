@@ -38,7 +38,7 @@ samples[1] = new Buffer("x01");
 samples[2] = new Buffer("x02");
 
 //
-var circleSpeed = 0.1;
+var circleSpeed = 0.01;
 
 
 class vertex{
@@ -64,23 +64,28 @@ class shared_vertex{
 
 //
 function vectorMult(v1,v2){
-  var vOut = new vertex(v1.x*v2.x,v1.y*v2.y);
+  var vOut = new vertex(v1.x * v2.x,v1.y * v2.y);
   return vOut;
 }
 
 function vectorDiv(v1,v2){
-  var vOut = new vertex(v1.x/v2.x,v1.y/v2.y);
+  var vOut = new vertex(v1.x / v2.x,v1.y / v2.y);
   return vOut;
 }
 
 function vectorAdd(v1,v2){
-  var vOut = new vertex(v1.x+v2.x,v1.y+v2.y);
+  var vOut = new vertex(v1.x + v2.x,v1.y + v2.y);
   return vOut;
 }
 
 function vectorSub(v1,v2){
-  var vOut = new vertex(v1.x-v2.x,v1.y-v2.y);
+  var vOut = new vertex(v1.x - v2.x,v1.y - v2.y);
   return vOut;
+}
+
+//
+function clip(value, min, max){
+  return Math.min(Math.max(value,min),max);
 }
 
 
@@ -91,18 +96,52 @@ var circle = function(id, vertices, speed){
   this.speed = speed;
   this.vertices = vertices;
 
+  // capped between 0,1
+  var u = 0;
+  // u will keep track of where we are on the line.
+  //
   var velocity = new vertex(speed,speed);
 
   var width = 0.03;
+  // init will be changed after the first animate function
+  // keeps it from going off the line at first.
+  var init = 0;
   //
   // again, which vertex you choose from the shared vertex doesn't matter.
   // would probably be better to have it so that the shared class has its own vertex to reference
   var currentPos = new vertex(vertices[0].v1.x, vertices[0].v1.y);
   var dir = 1;
   var counter = 0;
-  var startingPos = currentPos;
   //
-  this.getRelativePos = function(){
+  this.getRelativeLength = function(){
+    //getting the length between currentPos and vertex destination.
+    var d = Math.sqrt(Math.abs(squared((vertices[dir].v1.x - currentPos.x)) + squared((vertices[dir].v1.y - currentPos.y))));
+    return d;
+  }
+  // a better way to do this... 
+  // notes for converting to c++
+  // create a shared vertex class that is able to just be overloaded via =
+  // it'll save so much time.
+  // and don't call it a vertex. 
+  // becomes confusing.
+  this.linearAnimate = function(shared1, shared2){
+    var v1 = new vertex(shared1.v1.x,shared1.v1.y);
+    var v2 = new vertex(shared2.v1.x,shared2.v1.y);
+    //in theory this should just increment all the way to 1 via the speed.
+    //when it hits the vertex.... it should theoretically switch its velocity.
+    if(u == 1 || u == 0 && init != 0){
+      speed*-1;
+    }
+    init = 1;
+    u = clip((u+(speed)),0,1);
+    // technically this is fine.
+    // next time make it a vector ahead of time.
+    var uVec = new vertex(u,u);
+    currentPos = vectorAdd(v1,vectorMult(uVec,vectorSub(v2,v1)))
+  }
+  this.getVectorDistance = function(){
+    var d = vectorSub(currentPos, vertices[dir]);
+    return d;
   }
   this.changeDirection = function(){
     dir = Math.abs(dir - 1);
@@ -116,16 +155,14 @@ var circle = function(id, vertices, speed){
     // hard coded for test
     // working..
     // needs to have a more concrete solution to change the direction rather than using a counter that counts the updates.
+    post("id: ", id, "current x/y: ", currentPos.x,currentPos.y, '\n');
     if(counter == 25){
       dir = Math.abs(dir - 1);
       counter = 0;
     }
     counter++; 
   }
-  // this needs to bind x/y to the line
-  this.update = function(shared_vertex){
-    currentPos = vectorAdd(currentPos,vectorSub(shared_vertex.v1,currentPos));
-  } 
+
   this.paint = function(){
     var aspect = calcAspect();
     with(mgraphics){
@@ -143,7 +180,7 @@ var line = function(id, vertex1, vertex2){
   this.id = id;
   this.vertex1 = vertex1;
   this.vertex2 = vertex2;
-  post("id: ", id, "vertex1: ", vertex1.x,vertex1.y, "vertex2: ", vertex2.x,vertex2.y, '\n');;
+  //post("id: ", id, "vertex1: ", vertex1.x,vertex1.y, "vertex2: ", vertex2.x,vertex2.y, '\n');;
 
   // techincally this is all you need. adding hover in and out animations would be cool
   // would be really hard to do in c++
@@ -272,7 +309,10 @@ function rotateVertex(shared_vertex){
   shared_vertex.updateVertex(((x*Math.cos(angle)) - (y*Math.sin(angle))),((y*Math.cos(angle)) + (x*Math.sin(angle))));
 }
 //
-
+// the ooo
+// update the shared vectors between lines.
+// give said vectors to the update circle function.
+// repaint everything
 
 function update(){
   rotateVertex(rgVertex);
@@ -281,16 +321,20 @@ function update(){
   outputLineLength(lineR);
   outputLineLength(lineG);
   outputLineLength(lineB);
-  circleR.update(rgVertex);
-  circleG.update(gbVertex);
-  circleB.update(brVertex);
-  circleR.animateAcross();
-  circleG.animateAcross();
-  circleB.animateAcross();
+  //circleR.bindToLine(rgVertex, brVertex);
+  //circleG.bindToLine(gbVertex, rgVertex);
+  //circleB.bindToLine(brVertex, gbVertex);
+  //circleR.animateAcross();
+  //circleG.animateAcross();
+  //circleB.animateAcross();
+  circleR.linearAnimate(rgVertex,brVertex);
+  circleG.linearAnimate(gbVertex,rgVertex);
+  circleB.linearAnimate(brVertex,gbVertex);
   mgraphics.redraw();
 }
 
 //
+//reset to 50
 timeTask.interval = 50;
 timeTask.repeat();
 timeTask.execute();
