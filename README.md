@@ -1,4 +1,4 @@
-[![demo]
+[![Watch the video]
 (https://raw.githubusercontent.com/jakemorgan011/_keypress/javascriptBranch/thumbnail.png)]
 (https://raw.githubusercontent.com/jakemorgan011/_keypress/javascriptBranch/demo.mp4)
 
