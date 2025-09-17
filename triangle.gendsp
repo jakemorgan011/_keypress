@@ -1,0 +1,53 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 9,
+			"minor" : 0,
+			"revision" : 4,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "dsp.gen",
+		"rect" : [ 136.0, 133.0, 600.0, 745.0 ],
+		"gridsize" : [ 15.0, 15.0 ],
+		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-1",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 300.0, 726.0, 35.0, 22.0 ],
+					"text" : "out 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"code" : "Buffer rLength(\"rLength\");\r\nBuffer gLength(\"gLength\");\r\nBuffer bLength(\"bLength\");\r\n\r\nBuffer samp_r(\"x00\");\r\nBuffer samp_g(\"x01\");\r\nBuffer samp_b(\"x02\");\r\n\r\nBuffer r_stretch(\"r_stretch\");\r\nBuffer g_stretch(\"g_stretch\");\r\nBuffer b_stretch(\"b_stretch\");\r\n\r\n\r\nred = peek(rLength,0,0);\r\ngreen = peek(gLength,0,0);\r\nblue = peek(bLength,0,0);\r\n\r\nsr = SAMPLERATE;\r\n// TODO: this should be changed to delta time inside v8ui\r\nrate_divisor = 0.25;\r\n\r\nrate_r = red/rate_divisor;\r\nrate_g = green/rate_divisor;\r\nrate_b = blue/rate_divisor;\r\n\r\n\r\n\r\nb_fractionalSampleSum;\r\n\r\nfraction = 0;\r\n\r\n//use this to increment through stretch\r\n/*\r\nr_fractionalSampleSum += rate_r;\r\ng_fractionalSampleSum += rate_g;\r\nb_fractionalSampleSum += rate_b;\r\n*/\r\n\r\ncurrent_sample_index = 0;\r\nnext_sample_index = 0;\r\n\r\nstretch_index = 0;\r\n\r\nr_num_samps = dim(samp_r);\r\ng_num_samps = dim(samp_g);\r\nb_num_samps = dim(samp_b);\r\n\r\nr_fractionalSampleSum = 0;\r\ng_fractionalSampleSum = 0;\r\n\r\n// TODO: length needs to be the inverse of itself rather than its discrete value\r\n// TODO: add the other sides.\r\nfor(i = 0; i<r_num_samps; i += 1){\r\n\t\r\n\t// getting peek at every index\r\n\tred = peek(rLength,0,0);\r\n\t// indexes\r\n\tcurrent_sample_index = i;\r\n\tnext_sample_index = i+1;\r\n\r\n\t\r\n\t//samples\r\n\tsample_at_index = peek(samp_r,current_sample_index,0);\r\n\tsample_at_next_index = peek(samp_r,next_sample_index,0);\r\n\t\r\n\twhile(r_fractionalSampleSum < 1){\r\n\t\tmantissa = current_sample_index - r_fractionalSampleSum;\r\n\t\tinterpolated_sample = sample_at_index + (sample_at_next_index - sample_at_index)*mantissa;\r\n\t\tpoke(r_stretch,interpolated_sample,stretch_index);\r\n\t\t// end of loop\r\n\t\tstretch_index = stretch_index + 1;\r\n\t\t// using discrete change to rateR\r\n\t\tr_fractionalSampleSum = r_fractionalSampleSum + rate_r;\r\n\t}\r\n\tr_fractionalSampleSum = r_fractionalSampleSum - 1;\r\n}\r\n\r\nout1 = rate_r;\r\n",
+					"fontface" : 0,
+					"fontname" : "<Monospaced>",
+					"fontsize" : 12.0,
+					"id" : "obj-5",
+					"maxclass" : "codebox",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 43.0, 18.0, 537.0, 693.0 ]
+				}
+
+			}
+ ],
+		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 0 ],
+					"source" : [ "obj-5", 0 ]
+				}
+
+			}
+ ],
+		"originid" : "pat-2613"
+	}
+
+}

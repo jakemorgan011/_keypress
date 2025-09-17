@@ -1,0 +1,53 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 9,
+			"minor" : 0,
+			"revision" : 4,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "dsp.gen",
+		"rect" : [ 59.0, 119.0, 644.0, 715.0 ],
+		"gridsize" : [ 15.0, 15.0 ],
+		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-1",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 588.0, 622.0, 35.0, 22.0 ],
+					"text" : "out 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"code" : "Buffer gLength(\"gLength\");\r\n\r\nBuffer samp_g(\"x01\");\r\n\r\nBuffer g_stretch(\"g_stretch\");\r\n\r\ngreen = peek(gLength,0,0);\r\n\r\n\r\nsr = SAMPLERATE;\r\n// TODO: this should be changed to delta time inside v8ui\r\nrate_divisor = 0.25;\r\n\r\nrate_g = green/rate_divisor;\r\n\r\ncurrent_sample_index = 0;\r\nnext_sample_index = 0;\r\n\r\ng_num_samps = dim(samp_g);\r\n\r\ng_fractionalSampleSum = 0;\r\n\r\nstretch_index = 0;\r\n\r\n// TODO: length needs to be the inverse of itself rather than its discrete value\r\nfor(i = 0; i<g_num_samps; i += 1){\r\n\t\r\n\t// getting peek at every index\r\n\tgreen = peek(gLength,0,0);\r\n\trate_divisor = 0.25;\r\n\t// indexes\r\n\tcurrent_sample_index = i;\r\n\tnext_sample_index = i+1;\r\n\r\n\t\r\n\t//samples\r\n\tsample_at_index = peek(samp_g,current_sample_index,0);\r\n\tsample_at_next_index = peek(samp_g,next_sample_index,0);\r\n\t\r\n\twhile(g_fractionalSampleSum < 1){\r\n\t\tmantissa = current_sample_index - g_fractionalSampleSum;\r\n\t\tinterpolated_sample = sample_at_index + (sample_at_next_index - sample_at_index) * mantissa;\r\n\t\tpoke(g_stretch,interpolated_sample,stretch_index);\r\n\t\t// end of loop\r\n\t\tstretch_index = stretch_index + 1;\r\n\t\t// using discrete change to rate_g\r\n\t\t// idfk why there's a scope issue when using rate_g\r\n\t\tg_fractionalSampleSum = g_fractionalSampleSum + rate_g;\r\n\t}\r\n\tg_fractionalSampleSum = g_fractionalSampleSum - 1;\r\n}\r\n\r\n// okay weird bug that causes scope issues.\r\n// i'm trying to get the rate that will increase/decrease sample playback\r\n// i can declare it globally with no problems but when i want to grab the value inside the processing\r\n// it can't find the variable.\r\n// only after connecting the variable to an \"out \" object outside the code box it works.\r\n\r\nout = rate_g;\r\n",
+					"fontface" : 0,
+					"fontname" : "<Monospaced>",
+					"fontsize" : 12.0,
+					"id" : "obj-5",
+					"maxclass" : "codebox",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 9.0, 3.0, 559.0, 698.0 ]
+				}
+
+			}
+ ],
+		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 0 ],
+					"source" : [ "obj-5", 0 ]
+				}
+
+			}
+ ],
+		"originid" : "pat-1505"
+	}
+
+}
